@@ -1,0 +1,23 @@
+{
+  "name": "backend-brabo",
+  "version": "1.0.0",
+  "description": "Projeto feito para aplicar TypeScript e Node.JS",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/src/server.js",
+    "dev": "nodemon src/server.ts"
+  },
+  "author": "Enzo Garofalo",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.7.5",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {
+    "express": "^4.21.1"
+  }
+}
