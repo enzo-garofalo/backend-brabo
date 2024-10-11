@@ -17,6 +17,7 @@ routes.put('/signUp', AccountsManager.signUpHandler);
 routes.post('/login', AccountsManager.loginHandler);
 
 routes.post('/addNewEvent', EventsManager.NewEventHandler);
+routes.get('/getEvent', EventsManager.GetEventHandler);
 
 server.use(routes);
 
