@@ -1,18 +1,30 @@
 import { Request, Response, RequestHandler } from "express";
-
+import OracleDB from "oracledb";
 export namespace AccountsManager{
     
     export type userAccount = {
         id: number|undefined;
-        name:string;
+        completeName:string;
         email:string;
         password: string|undefined;
+        admin: boolean;
     }
-    export let accountsDatabase: userAccount[] = []
 
-    function saveNewAccount(ua: userAccount){
-        accountsDatabase.push(ua);
-        return accountsDatabase.length;
+    async function login(email:string, password:string){
+        let connection = await OracleDB.getConnection({
+            user : 'ENZODEV',
+            password : '1234',
+            connectString : 'localhost:1521/XEPDB1'
+        });
+
+        const account = await connection.execute(
+            'SELECT * FROM ACCOUNTS WHERE EMAIL = :email AND PASSWORD = :password',
+            [email, password]
+        );
+
+        await connection.close();
+        console.dir(account.rows);
+        return account.rows;
     }
 
     export const signUpHandler:RequestHandler = (req:Request, res:Response)=>{
@@ -20,23 +32,22 @@ export namespace AccountsManager{
         const pEmail = req.get('email');
         const pPassword = req.get('password');
         
-        if(pName && pEmail && pPassword){
-            const newAccount:userAccount = {
-                id:(accountsDatabase.length+1),
-                name:pName,
-                email:pEmail,
-                password:pPassword
-            }
-            const id = saveNewAccount(newAccount);
-            res.statusCode = 200;
-            res.send(`Nova conta adicionada! Código da conta ${id}`);
-        }else{
-            res.statusCode = 400;
-            res.send("Parâmetros Inválidos ou faltantes");
-        }
+        // if(pName && pEmail && pPassword){
+        //     const newAccount:userAccount = {
+        //         id:(accountsDatabase.length+1),
+        //         name:pName,
+        //         email:pEmail,
+        //         password:pPassword
+        //     }
+        //     const id = saveNewAccount(newAccount);
+        //     res.statusCode = 200;
+        //     res.send(`Nova conta adicionada! Código da conta ${id}`);
+        // }else{
+        //     res.statusCode = 400;
+        //     res.send("Parâmetros Inválidos ou faltantes");
     }
 
-    export const loginHandler:RequestHandler = (req:Request,res:Response)=>{
+    export const loginHandler:RequestHandler = async (req:Request,res:Response)=>{
         const pEmail = req.get('email');
         const pPassword = req.get('password');
         
@@ -45,21 +56,14 @@ export namespace AccountsManager{
             res.send("Email e senha são obrigatórios!");
             return;
         }
-        
-        let found:boolean = false;
+        const  account =  await login(pEmail, pPassword);
 
-        for(const account of accountsDatabase){
-            if(account.email == pEmail && account.password == pPassword){
-                res.statusCode = 200;
-                res.send(`Seja bem vindo, ${account.name}`)
-                found = true;
-                break;
-            }
-        }
-        
-        if(!found){
+        if(account && account.length > 0){
+            res.statusCode = 200;
+            res.send("Usuário logado!");
+        }else{
             res.statusCode = 400;
-            res.send("Email ou senha de login Inválidos!");
+            res.send("Email ou senha inválidos!");
         }
-    }
+    }    
 }
